@@ -2,6 +2,7 @@ var canvas = document.getElementById("can");
 var addImageButton = document.getElementById("addImgB");
 var addImageInput = document.getElementById("addImgT");
 var selected = document.getElementById("selected");
+var addedImagesDiv = document.getElementById("addedImgs");
 var context = canvas.getContext("2d");
 var background = new Image;
 background.src = "https://i.redd.it/sisriaj1j4v31.jpg";
@@ -85,9 +86,28 @@ function addClickable()
         addImageButton.onclick = function (event)
         {
                 selected.src = addImageInput.value;
+                addImageInput.value = "";
+
+                for (var i = 0; i < addedImagesDiv.childNodes.length;i++)
+                {
+                        if (addedImagesDiv.childNodes[i].src == selected.src)
+                        {
+                                selectedCopy = addedImagesDiv.childNodes[i];
+                                return;
+                        }
+                }
+
                 selectedCopy = new Image();
                 selectedCopy.src = selected.src;
-                addImageInput.value = "";
+                selectedCopy.width = 60;
+                selectedCopy.onclick = function (event)
+                {
+                        selectedCopy = this;
+                        selected.src = this.src;
+                };
+                console.log(selectedCopy);
+                addedImagesDiv.appendChild(selectedCopy);
+                
         };
 
         //left click adding selected to Canvas
