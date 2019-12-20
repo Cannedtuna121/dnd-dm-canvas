@@ -1,13 +1,18 @@
 var canvas = document.getElementById("can");
+var addImageButton = document.getElementById("addImgB");
+var addImageInput = document.getElementById("addImgT");
+var selected = document.getElementById("selected");
 var context = canvas.getContext("2d");
-var img = new Image;
-img.src = "https://static.thenounproject.com/png/318104-200.png";
 var background = new Image;
 background.src = "https://i.redd.it/sisriaj1j4v31.jpg";
 
+
+var selectedCopy = new Image();
+
 var dmStuff = new Array();
 var playerStuff = new Array();
-var selected = img;
+
+selectedCopy.src = selected.src;
 
 makeCanvasWithBackgroundImage(background, 40);
 addClickable();
@@ -76,16 +81,25 @@ function drawGrid(i)
 
 function addClickable()
 {
-        //left click adding things
+
+        addImageButton.onclick = function (event)
+        {
+                selected.src = addImageInput.value;
+                selectedCopy = new Image();
+                selectedCopy.src = selected.src;
+                addImageInput.value = "";
+        };
+
+        //left click adding selected to Canvas
         canvas.onclick = function (event)
         {
                 var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
                 var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
-                drawImageOnGrid(selected, gridX,gridY);
-                playerStuff.push(new Array(selected, gridX, gridY));
+                drawImageOnGrid(selectedCopy, gridX,gridY);
+                playerStuff.push(new Array(selectedCopy, gridX, gridY));
         };
 
-        //right click removing things
+        //right click removing images from the Canvas
         canvas.oncontextmenu = function (event)
         {
                 event.preventDefault(); //stop the context menu from showing up
