@@ -2,11 +2,11 @@ var canvas = document.getElementById("can");
 var addImageButton = document.getElementById("addImgB");
 var addImageInput = document.getElementById("addImgT");
 var selected = document.getElementById("selected");
+var setBackgroundInput = document.getElementById("setBackgroundInput");
+var setBackgroundButton = document.getElementById("setBackgroundButton");
 var addedImagesDiv = document.getElementById("addedImgs");
 var context = canvas.getContext("2d");
 var background = new Image;
-background.src = "https://i.redd.it/sisriaj1j4v31.jpg";
-
 
 var selectedCopy = new Image();
 
@@ -15,7 +15,6 @@ var playerStuff = new Array();
 
 selectedCopy.src = selected.src;
 
-makeCanvasWithBackgroundImage(background, 40);
 addClickable();
 
 
@@ -82,6 +81,13 @@ function drawGrid(i)
 
 function addClickable()
 {
+
+        setBackgroundButton.onclick = function (event)
+        {
+                background.src = setBackgroundInput.value;
+                setBackgroundInput.value = "";
+                makeCanvasWithBackgroundImage(background, 40);
+        };
 
         addImageButton.onclick = function (event)
         {
