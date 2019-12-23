@@ -17,12 +17,13 @@ selectedCopy.src = selected.src;
 
 addClickable();
 
+context.strokeStyle = 'rgba(100,0,0,1)';
 
 function drawImageOnGrid(image, gridX, gridY)
 {
         if (image.complete)
         {
-                context.drawImage(image, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
+                context.drawImage(image, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 1, canvas.gridSize - 1);
         }
         else
         {
@@ -33,7 +34,7 @@ function drawImageOnGrid(image, gridX, gridY)
                 {
                        for (var i = 0; i < image.toDo.length;i++)
                         {
-                                context.drawImage(image, image.toDo[i][0]*image.toDo[i][2],image.toDo[i][1]*image.toDo[i][2],image.toDo[i][2],image.toDo[i][2]);
+                                context.drawImage(image, image.toDo[i][0]*image.toDo[i][2] + 1,image.toDo[i][1]*image.toDo[i][2] + 1,image.toDo[i][2] - 1,image.toDo[i][2] - 1);
                         }
                         image.toDo = null;
                 };
@@ -63,19 +64,21 @@ function makeCanvasWithBackgroundImage(background, gridSize)
 
 function drawGrid(i)
 {
-        for (var y = 0; y < canvas.height;y+=i)
+        context.beginPath();
+        context.strokeStyle = 'rgba(0,0,0,1)';
+
+        for (var y = 0.5; y < canvas.height;y+=i)
         {
                 context.moveTo(0,y);
                 context.lineTo(canvas.width,y);
         }
 
-        for (var x = 0; x < canvas.width;x+=i)
+        for (var x = 0.5; x < canvas.width;x+=i)
         {
                 context.moveTo(x,0);
                 context.lineTo(x,canvas.height);        
         }
         context.stroke();
-        context.beginPath();
         canvas.gridSize = i;
 }
 
@@ -153,7 +156,10 @@ function addClickable()
 
 function clearGrid(gridX, gridY)
 {
-        context.drawImage(background, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 2, canvas.gridSize - 2, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 2, canvas.gridSize - 2);
+        context.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
+        context.beginPath();
+        context.rect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
+        context.stroke();
 }
 
 function clearCanvas()
