@@ -5,6 +5,9 @@ var selected = document.getElementById("selected");
 var setBackgroundInput = document.getElementById("setBackgroundInput");
 var setBackgroundButton = document.getElementById("setBackgroundButton");
 var addedImagesDiv = document.getElementById("addedImgs");
+var insertButton = document.getElementById("insertButton");
+var moveButton = document.getElementById("moveButton");
+var modeLabel = document.getElementById("modeLabel");
 var context = canvas.getContext("2d");
 var background = new Image;
 
@@ -12,6 +15,11 @@ var selectedCopy = new Image();
 
 var dmStuff = new Array();
 var playerStuff = new Array();
+var selectedStuff;
+
+var mode = 0;
+
+var selectedToMove;
 
 selectedCopy.src = selected.src;
 
@@ -82,9 +90,93 @@ function drawGrid(i)
         canvas.gridSize = i;
 }
 
+function getGridImage(gridX, gridY, arr, remove)
+{
+
+        for (var i = 0; i < arr.length;i++)
+        {
+                if (arr[i][1] == gridX && arr[i][2] == gridY)
+                {
+                        var toReturn = arr[i][0];
+                        if (remove)
+                        {
+                                arr.splice(i,1);
+                        }
+                        
+                        return toReturn;
+                }
+        }
+
+}
+
+
 function addClickable()
 {
 
+        // canvas mouse down instructions
+        canvas.onmousedown = function (event)
+        {
+                if (mode == 1 && event.button == 0)
+                {
+                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                        selectedToMove = getGridImage(gridX, gridY, playerStuff, true);
+                        selectedStuff = playerStuff;
+                        if (selectedToMove == null)
+                        {
+                                selectedToMove = getGridImage(gridX, gridY, dmStuff, true);
+                                selectedStuff = dmStuff;
+                        }
+                        if (selectedToMove == null)
+                        {
+                                selectedStuff = null;
+                        }
+                        else
+                        {
+                                clearGrid(gridX, gridY);
+                        }
+                }
+        };
+
+        // canvas mouse up instructions
+        canvas.onmouseup = function (event)
+        {
+                if (mode == 1 && event.button == 0 && selectedToMove != null)
+                {
+                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize);
+
+                        drawImageOnGrid(selectedToMove, gridX,gridY);
+                        selectedStuff.push(new Array(selectedToMove, gridX, gridY));
+                        selectedStuff = null;
+                        selectedToMove = null;
+                }
+        };
+
+        // canvas mouse move instructions
+        canvas.onmousemove = function (event)
+        {
+                if (mode == 1)
+                {
+
+                }
+        };
+
+        // insert button instructions
+        insertButton.onclick = function (event)
+        {
+                mode = 0;
+                modeLabel.textContent = "Insert";
+        };
+
+        // move button instructions
+        moveButton.onclick = function (event)
+        {
+                mode = 1;
+                modeLabel.textContent = "Move";
+        };
+
+        // set background instructions
         setBackgroundButton.onclick = function (event)
         {
                 background.src = setBackgroundInput.value;
@@ -92,6 +184,7 @@ function addClickable()
                 makeCanvasWithBackgroundImage(background, 40);
         };
 
+        // add image instructions
         addImageButton.onclick = function (event)
         {
                 selected.src = addImageInput.value;
@@ -114,18 +207,20 @@ function addClickable()
                         selectedCopy = this;
                         selected.src = this.src;
                 };
-                console.log(selectedCopy);
                 addedImagesDiv.appendChild(selectedCopy);
                 
         };
 
-        //left click adding selected to Canvas
+        // left click adding selected to Canvas
         canvas.onclick = function (event)
         {
-                var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
-                drawImageOnGrid(selectedCopy, gridX,gridY);
-                playerStuff.push(new Array(selectedCopy, gridX, gridY));
+                if (mode == 0)
+                {
+                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
+                         var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                        drawImageOnGrid(selectedCopy, gridX,gridY);
+                        playerStuff.push(new Array(selectedCopy, gridX, gridY));
+                }
         };
 
         //right click removing images from the Canvas
@@ -136,23 +231,22 @@ function addClickable()
                 var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
                 clearGrid(gridX, gridY);
 
-                for (var i = 0; i < dmStuff.length;i++)
-                {
-                        if (dmStuff[i][1] == gridX && dmStuff[i][2] == gridY)
-                        {
-                                dmStuff.splice(i,1);
-                        }
-                }
-                
-                for (var i = 0; i < playerStuff.length;i++)
-                {
-                        if (playerStuff[i][1] == gridX && playerStuff[i][2] == gridY)
-                        {
-                                playerStuff.splice(i,1);
-                        }
-                }
+                removeGridImageFromArray(gridX, gridY, dmStuff);
+                removeGridImageFromArray(gridX, gridY, playerStuff);
         };
 }
+
+function removeGridImageFromArray(gridX, gridY, arr)
+{
+        for (var i = 0; i < arr.length;i++)
+        {
+                if (arr[i][1] == gridX && arr[i][2] == gridY)
+                {
+                        arr.splice(i,1);
+                }
+        }
+}
+
 
 function clearGrid(gridX, gridY)
 {
