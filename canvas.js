@@ -13,8 +13,8 @@ var background = new Image;
 
 var selectedCopy = new Image();
 
-var dmStuff = new Array();
-var playerStuff = new Array();
+var dmImages = new Array();
+var playerImages = new Array();
 var selectedStuff;
 
 var mode = 0;
@@ -29,6 +29,12 @@ context.strokeStyle = 'rgba(100,0,0,1)';
 
 function drawImageOnGrid(image, gridX, gridY)
 {
+
+        if (image == null)
+        {
+                return;
+        }
+
         if (image.complete)
         {
                 context.drawImage(image, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 1, canvas.gridSize - 1);
@@ -36,7 +42,10 @@ function drawImageOnGrid(image, gridX, gridY)
         else
         {
                 if (image.toDo == null)
+                {
                         image.toDo = new Array();
+                }
+
                 image.toDo.push(new Array(gridX,gridY,canvas.gridSize));
                 image.onload = function() 
                 {
@@ -51,7 +60,7 @@ function drawImageOnGrid(image, gridX, gridY)
 
 }
 
-function makeCanvasWithBackgroundImage(background, gridSize)
+function makeCanvasWithBackgroundImage(background, gridSize, remakeImageArrays)
 {
         if (!background.complete)
         {
@@ -62,15 +71,20 @@ function makeCanvasWithBackgroundImage(background, gridSize)
         }
         else
         {
-        canvas.background = background;
-        canvas.height = background.height;
-        canvas.width = background.width;
-        context.drawImage(background, 0,0);
-        drawGrid(gridSize);
+                canvas.background = background;
+                canvas.height = background.height;
+                canvas.width = background.width;
+                context.drawImage(background, 0,0);
+                drawGridLines(gridSize);
+                if (remakeImageArrays)
+                {
+                        dmImages = new Array(Math.ceil(canvas.height / gridSize) * Math.ceil(canvas.width / gridSize));
+                        playerImages = new Array(Math.ceil(canvas.height / gridSize) * Math.ceil(canvas.width / gridSize));
+                }
         }
 }
 
-function drawGrid(i)
+function drawGridLines(i)
 {
         context.beginPath();
         context.strokeStyle = 'rgba(0,0,0,1)';
@@ -90,23 +104,9 @@ function drawGrid(i)
         canvas.gridSize = i;
 }
 
-function getGridImage(gridX, gridY, arr, remove)
+function getGridImage(gridX, gridY, arr)
 {
-
-        for (var i = 0; i < arr.length;i++)
-        {
-                if (arr[i][1] == gridX && arr[i][2] == gridY)
-                {
-                        var toReturn = arr[i][0];
-                        if (remove)
-                        {
-                                arr.splice(i,1);
-                        }
-                        
-                        return toReturn;
-                }
-        }
-
+        return arr[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)];
 }
 
 
@@ -120,12 +120,14 @@ function addClickable()
                 {
                         var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
                         var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
-                        selectedToMove = getGridImage(gridX, gridY, playerStuff, true);
-                        selectedStuff = playerStuff;
+                        selectedToMove = getGridImage(gridX, gridY, playerImages);
+                        removeGridImageFromArray(gridX, gridY, playerImages);
+                        selectedStuff = playerImages;
                         if (selectedToMove == null)
                         {
-                                selectedToMove = getGridImage(gridX, gridY, dmStuff, true);
-                                selectedStuff = dmStuff;
+                                selectedToMove = getGridImage(gridX, gridY, dmImages);
+                                removeGridImageFromArray(gridX, gridY, dmImages);
+                                selectedStuff = dmImages;
                         }
                         if (selectedToMove == null)
                         {
@@ -133,7 +135,7 @@ function addClickable()
                         }
                         else
                         {
-                                clearGrid(gridX, gridY);
+                                drawGrid(gridX, gridY);
                         }
                 }
         };
@@ -147,18 +149,9 @@ function addClickable()
                         var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize);
 
                         drawImageOnGrid(selectedToMove, gridX,gridY);
-                        selectedStuff.push(new Array(selectedToMove, gridX, gridY));
+                        selectedStuff[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedToMove;
                         selectedStuff = null;
                         selectedToMove = null;
-                }
-        };
-
-        // canvas mouse move instructions
-        canvas.onmousemove = function (event)
-        {
-                if (mode == 1)
-                {
-
                 }
         };
 
@@ -181,7 +174,7 @@ function addClickable()
         {
                 background.src = setBackgroundInput.value;
                 setBackgroundInput.value = "";
-                makeCanvasWithBackgroundImage(background, 40);
+                makeCanvasWithBackgroundImage(background, 40, true);
         };
 
         // add image instructions
@@ -217,9 +210,9 @@ function addClickable()
                 if (mode == 0)
                 {
                         var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                         var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
                         drawImageOnGrid(selectedCopy, gridX,gridY);
-                        playerStuff.push(new Array(selectedCopy, gridX, gridY));
+                        playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedCopy;
                 }
         };
 
@@ -229,7 +222,7 @@ function addClickable()
                 event.preventDefault(); //stop the context menu from showing up
                 var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
                 var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
-                clearGrid(gridX, gridY);
+                drawGrid(gridX, gridY);
 
                 removeGridImageFromArray(gridX, gridY, dmStuff);
                 removeGridImageFromArray(gridX, gridY, playerStuff);
@@ -238,13 +231,7 @@ function addClickable()
 
 function removeGridImageFromArray(gridX, gridY, arr)
 {
-        for (var i = 0; i < arr.length;i++)
-        {
-                if (arr[i][1] == gridX && arr[i][2] == gridY)
-                {
-                        arr.splice(i,1);
-                }
-        }
+        arr[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = null;
 }
 
 
@@ -256,6 +243,13 @@ function clearGrid(gridX, gridY)
         context.stroke();
 }
 
+function drawGrid(gridX, gridY)
+{
+        clearGrid(gridX, gridY);
+        drawImageOnGrid(dmImages[gridX + gridY * Math.ceil(canvas.width / canvas.height)], gridX, gridY);
+        drawImageOnGrid(playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.height)], gridX, gridY);
+}
+
 function clearCanvas()
 {
         context.clearRect(0,0,canvas.width,canvas.height);
@@ -264,24 +258,24 @@ function clearCanvas()
 
 function restorePlayerCanvas()
 {
-        makeCanvasWithBackgroundImage(canvas.background, canvas.gridSize);
+        makeCanvasWithBackgroundImage(canvas.background, canvas.gridSize, false);
                 
-        for (var i = 0; i < playerStuff.length;i++)
+        for (var i = 0; i < playerImages.length;i++)
         {
-                drawImageOnGrid(playerStuff[i][0], playerStuff[i][1], playerStuff[i][2]);
+                drawImageOnGrid(playerImages[i], i % Math.ceil(canvas.width / canvas.gridSize), Math.floor(i / Math.ceil(canvas.width / canvas.gridSize)));
         }
 }
 
 function restoreDmCanvas()
 {
-        makeCanvasWithBackgroundImage(canvas.background, canvas.gridSize);
+        makeCanvasWithBackgroundImage(canvas.background, canvas.gridSize, false);
         
-        for (var i = 0; i < dmStuff.length;i++)
+        for (var i = 0; i < dmImages.length;i++)
         {
-                drawImageOnGrid(dmStuff[i][0], dmStuff[i][1], dmStuff[i][2]);
+                drawImageOnGrid(dmImages[i], i % Math.ceil(canvas.width / canvas.gridSize), Math.floor(i / Math.ceil(canvas.width / canvas.gridSize)));
         }
-        for (var i = 0; i < playerStuff.length;i++)
+        for (var i = 0; i < playerImages.length;i++)
         {
-                drawImageOnGrid(playerStuff[i][0], playerStuff[i][1], playerStuff[i][2]);
+                drawImageOnGrid(playerImages[i], i % Math.ceil(canvas.width / canvas.gridSize), Math.floor(i / Math.ceil(canvas.width / canvas.gridSize)));
         }
 }
