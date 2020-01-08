@@ -224,8 +224,8 @@ function addClickable()
                 var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
                 drawGrid(gridX, gridY);
 
-                removeGridImageFromArray(gridX, gridY, dmStuff);
-                removeGridImageFromArray(gridX, gridY, playerStuff);
+                removeGridImageFromArray(gridX, gridY, dmImages);
+                removeGridImageFromArray(gridX, gridY, playerImages);
         };
 }
 
