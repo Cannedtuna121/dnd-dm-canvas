@@ -118,8 +118,8 @@ function addClickable()
         {
                 if (mode == 1 && event.button == 0)
                 {
-                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
                         selectedToMove = getGridImage(gridX, gridY, playerImages);
                         removeGridImageFromArray(gridX, gridY, playerImages);
                         selectedStuff = playerImages;
@@ -145,8 +145,8 @@ function addClickable()
         {
                 if (mode == 1 && event.button == 0 && selectedToMove != null)
                 {
-                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize);
+                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize);
 
                         drawImageOnGrid(selectedToMove, gridX,gridY);
                         selectedStuff[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedToMove;
@@ -209,8 +209,8 @@ function addClickable()
         {
                 if (mode == 0)
                 {
-                        var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                        var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
                         drawImageOnGrid(selectedCopy, gridX,gridY);
                         playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedCopy;
                 }
@@ -220,8 +220,8 @@ function addClickable()
         canvas.oncontextmenu = function (event)
         {
                 event.preventDefault(); //stop the context menu from showing up
-                var gridX = Math.floor((event.layerX - canvas.offsetLeft)/canvas.gridSize); 
-                var gridY = Math.floor((event.layerY - canvas.offsetTop)/canvas.gridSize); 
+                var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
                 drawGrid(gridX, gridY);
 
                 removeGridImageFromArray(gridX, gridY, dmImages);
