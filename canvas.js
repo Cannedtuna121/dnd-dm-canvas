@@ -8,6 +8,7 @@ var addedImagesDiv = document.getElementById("addedImgs");
 var insertButton = document.getElementById("insertButton");
 var moveButton = document.getElementById("moveButton");
 var modeLabel = document.getElementById("modeLabel");
+var hideButton = document.getElementById("hideButton");
 var context = canvas.getContext("2d");
 var background = new Image;
 
@@ -15,9 +16,11 @@ var selectedCopy = new Image();
 
 var dmImages = new Array();
 var playerImages = new Array();
+var hiddenTiles = new Array();
 var selectedStuff;
 
 var mode = 0;
+var hideX, hideY;
 
 var selectedToMove;
 
@@ -80,6 +83,8 @@ function makeCanvasWithBackgroundImage(background, gridSize, remakeImageArrays)
                 {
                         dmImages = new Array(Math.ceil(canvas.height / gridSize) * Math.ceil(canvas.width / gridSize));
                         playerImages = new Array(Math.ceil(canvas.height / gridSize) * Math.ceil(canvas.width / gridSize));
+                        hiddenTiles = new Array(Math.ceil(canvas.height / gridSize) * Math.ceil(canvas.width / gridSize));
+                
                 }
         }
 }
@@ -116,42 +121,82 @@ function addClickable()
         // canvas mouse down instructions
         canvas.onmousedown = function (event)
         {
-                if (mode == 1 && event.button == 0)
+                if (mode == 1)
                 {
-                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
-                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
-                        selectedToMove = getGridImage(gridX, gridY, playerImages);
-                        removeGridImageFromArray(gridX, gridY, playerImages);
-                        selectedStuff = playerImages;
-                        if (selectedToMove == null)
+                        if (event.button == 0)
                         {
-                                selectedToMove = getGridImage(gridX, gridY, dmImages);
-                                removeGridImageFromArray(gridX, gridY, dmImages);
-                                selectedStuff = dmImages;
+                                var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                                var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
+                                selectedToMove = getGridImage(gridX, gridY, playerImages);
+                                removeGridImageFromArray(gridX, gridY, playerImages);
+                                selectedStuff = playerImages;
+                                if (selectedToMove == null)
+                                {
+                                        selectedToMove = getGridImage(gridX, gridY, dmImages);
+                                        removeGridImageFromArray(gridX, gridY, dmImages);
+                                        selectedStuff = dmImages;
+                                }
+                                if (selectedToMove == null)
+                                {
+                                        selectedStuff = null;
+                                }
+                                else
+                                {
+                                        drawGrid(gridX, gridY);
+                                }
                         }
-                        if (selectedToMove == null)
-                        {
-                                selectedStuff = null;
-                        }
-                        else
-                        {
-                                drawGrid(gridX, gridY);
-                        }
+                }
+                else if (mode == 2)
+                {
+                        hideX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                        hideY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
                 }
         };
 
         // canvas mouse up instructions
         canvas.onmouseup = function (event)
         {
-                if (mode == 1 && event.button == 0 && selectedToMove != null)
+                if (mode == 1)
                 {
-                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
-                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize);
+                        if (event.button == 0 && selectedToMove != null)
+                        {
+                                var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                                var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize);
 
-                        drawImageOnGrid(selectedToMove, gridX,gridY);
-                        selectedStuff[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedToMove;
-                        selectedStuff = null;
-                        selectedToMove = null;
+                                drawImageOnGrid(selectedToMove, gridX,gridY);
+                                selectedStuff[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] = selectedToMove;
+                                selectedStuff = null;
+                                selectedToMove = null;
+                        }
+                }
+                else if (mode == 2)
+                {
+                        if (hideX != null && hideY != null)
+                        {
+                                var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                                var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize);
+
+                                var x1 = Math.min(gridX, hideX);
+                                var x2 = Math.max(gridX, hideX);
+                                var y1 = Math.min(gridY, hideY);
+                                var y2 = Math.max(gridY, hideY);
+
+                                for (var x = x1; x <= x2; x++)
+                                {
+                                        for (var y = y1; y <= y2; y++)
+                                        {
+                                                if (event.button == 0)
+                                                {
+                                                        hiddenTiles[x + y * Math.ceil(canvas.width / canvas.gridSize)] = true;
+                                                }
+                                                else if (event.button == 2)
+                                                {
+                                                        hiddenTiles[x + y * Math.ceil(canvas.width / canvas.gridSize)] = null;
+                                                }
+                                                drawGrid(x, y);
+                                        }
+                                }
+                        }
                 }
         };
 
@@ -168,6 +213,13 @@ function addClickable()
                 mode = 1;
                 modeLabel.textContent = "Move";
         };
+
+        // hide button instructions
+        hideButton.onclick = function (event)
+        {
+                mode = 2;
+                modeLabel.textContent = "Hide";
+        }
 
         // set background instructions
         setBackgroundButton.onclick = function (event)
@@ -219,13 +271,16 @@ function addClickable()
         //right click removing images from the Canvas
         canvas.oncontextmenu = function (event)
         {
-                event.preventDefault(); //stop the context menu from showing up
-                var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
-                var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
-                drawGrid(gridX, gridY);
+                if (mode == 0)
+                {
+                        event.preventDefault(); //stop the context menu from showing up
+                        var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
+                        var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
+                        drawGrid(gridX, gridY);
 
-                removeGridImageFromArray(gridX, gridY, dmImages);
-                removeGridImageFromArray(gridX, gridY, playerImages);
+                        removeGridImageFromArray(gridX, gridY, dmImages);
+                        removeGridImageFromArray(gridX, gridY, playerImages);
+                }
         };
 }
 
@@ -237,17 +292,24 @@ function removeGridImageFromArray(gridX, gridY, arr)
 
 function clearGrid(gridX, gridY)
 {
-        context.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
         context.beginPath();
-        context.rect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
-        context.stroke();
+        if (hiddenTiles[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] == true)
+        {
+                context.strokeStyle = '#FFFFFF';
+        }
+        else
+        {
+                context.strokeStyle = '#000000';
+        }
+        context.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
+        context.strokeRect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
 }
 
 function drawGrid(gridX, gridY)
 {
         clearGrid(gridX, gridY);
-        drawImageOnGrid(dmImages[gridX + gridY * Math.ceil(canvas.width / canvas.height)], gridX, gridY);
-        drawImageOnGrid(playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.height)], gridX, gridY);
+        drawImageOnGrid(dmImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)], gridX, gridY);
+        drawImageOnGrid(playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)], gridX, gridY);
 }
 
 function clearCanvas()
