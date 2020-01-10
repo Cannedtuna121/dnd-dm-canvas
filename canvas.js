@@ -276,10 +276,11 @@ function addClickable()
                 {
                         var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
                         var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
-                        drawGrid(gridX, gridY);
 
                         removeGridImageFromArray(gridX, gridY, dmImages);
                         removeGridImageFromArray(gridX, gridY, playerImages);
+
+                        drawGrid(gridX, gridY);
                 }
         };
 }
@@ -332,7 +333,7 @@ function clearGrid(gridX, gridY)
         context.stroke();
        
         useColor = myColor;
-        if (isTileHidden(gridX, gridY + 1) != hidden && isTileHidden(gridX, gridY + 1 != null))
+        if (isTileHidden(gridX, gridY + 1) != hidden && isTileHidden(gridX, gridY + 1) != null)
         {
                 useColor = '#FF00FF';
         }
