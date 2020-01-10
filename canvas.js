@@ -271,9 +271,9 @@ function addClickable()
         //right click removing images from the Canvas
         canvas.oncontextmenu = function (event)
         {
+                event.preventDefault(); //stop the context menu from showing up
                 if (mode == 0)
                 {
-                        event.preventDefault(); //stop the context menu from showing up
                         var gridX = Math.floor((event.pageX - canvas.offsetLeft)/canvas.gridSize); 
                         var gridY = Math.floor((event.pageY - canvas.offsetTop)/canvas.gridSize); 
                         drawGrid(gridX, gridY);
@@ -292,17 +292,89 @@ function removeGridImageFromArray(gridX, gridY, arr)
 
 function clearGrid(gridX, gridY)
 {
-        context.beginPath();
-        if (hiddenTiles[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] == true)
+        context.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
+        
+       
+        var hidden = isTileHidden(gridX, gridY);
+        var myColor;
+
+        if (hidden)
         {
-                context.strokeStyle = '#FFFFFF';
+                myColor = '#FFFFFF'
         }
         else
         {
-                context.strokeStyle = '#000000';
+                myColor = '#000000'
         }
-        context.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize);
-        context.strokeRect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
+
+        var useColor = myColor;
+        if (isTileHidden(gridX, gridY - 1) != hidden && isTileHidden(gridX, gridY -1) != null)
+        {
+                useColor = '#FF00FF';
+        }
+
+        context.beginPath();
+        context.strokeStyle = useColor;
+        context.moveTo(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5);
+        context.lineTo(gridX * canvas.gridSize + canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5);
+        context.stroke();
+       
+        useColor = myColor;
+        if (isTileHidden(gridX + 1, gridY) != hidden && isTileHidden(gridX + 1, gridY) != null)
+        {
+                useColor = '#FF00FF';
+        }
+
+        context.beginPath();
+        context.strokeStyle = useColor;
+        context.moveTo(gridX * canvas.gridSize + 0.5 + canvas.gridSize, gridY * canvas.gridSize + 0.5);
+        context.lineTo(gridX * canvas.gridSize + canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5 + canvas.gridSize);
+        context.stroke();
+       
+        useColor = myColor;
+        if (isTileHidden(gridX, gridY + 1) != hidden && isTileHidden(gridX, gridY + 1 != null))
+        {
+                useColor = '#FF00FF';
+        }
+
+        context.beginPath();
+        context.strokeStyle = useColor;
+        context.moveTo(gridX * canvas.gridSize + 0.5 + canvas.gridSize, gridY * canvas.gridSize + 0.5 + canvas.gridSize);
+        context.lineTo(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5 + canvas.gridSize);
+        context.stroke();
+        
+        useColor = myColor;
+        if (isTileHidden(gridX - 1, gridY) != hidden && isTileHidden(gridX - 1, gridY) != null)
+        {
+                useColor = '#FF00FF';
+        }
+
+        context.beginPath();
+        context.strokeStyle = useColor;
+        context.moveTo(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5 + canvas.gridSize);
+        context.lineTo(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5);
+        context.stroke();
+       
+}
+
+function isTileHidden(gridX, gridY)
+{
+        if (gridX >= 0 && gridX <= Math.ceil(canvas.width / canvas.gridSize))
+        {
+                if (gridY >= 0 && gridY <= Math.ceil(canvas.height / canvas.gridSize))
+                {
+                        if (hiddenTiles[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)] == true)
+                        {
+                                return true;
+                        }
+                        else
+                        {
+                                return false;
+                        }
+                }
+        }
+
+        return null;
 }
 
 function drawGrid(gridX, gridY)
