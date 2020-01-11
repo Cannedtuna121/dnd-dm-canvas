@@ -12,6 +12,10 @@ var hideButton = document.getElementById("hideButton");
 var context = canvas.getContext("2d");
 var background = new Image;
 
+var makePlayerCanvasButton = document.getElementById("makePlayerCanvasButton");
+var playerCanvas = document.getElementById('playerCanvas');
+var playerContext = playerCanvas.getContext("2d");
+
 var selectedCopy = new Image();
 
 var dmImages = new Array();
@@ -30,8 +34,13 @@ addClickable();
 
 context.strokeStyle = 'rgba(100,0,0,1)';
 
-function drawImageOnGrid(image, gridX, gridY)
+function drawImageOnGrid(image, gridX, gridY, drawContext)
 {
+
+        if (drawContext == null)
+        {
+                drawContext = context;
+        }
 
         if (image == null)
         {
@@ -40,7 +49,7 @@ function drawImageOnGrid(image, gridX, gridY)
 
         if (image.complete)
         {
-                context.drawImage(image, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 1, canvas.gridSize - 1);
+                drawContext.drawImage(image, gridX * canvas.gridSize + 1, gridY * canvas.gridSize + 1, canvas.gridSize - 1, canvas.gridSize - 1);
         }
         else
         {
@@ -54,13 +63,11 @@ function drawImageOnGrid(image, gridX, gridY)
                 {
                        for (var i = 0; i < image.toDo.length;i++)
                         {
-                                context.drawImage(image, image.toDo[i][0]*image.toDo[i][2] + 1,image.toDo[i][1]*image.toDo[i][2] + 1,image.toDo[i][2] - 1,image.toDo[i][2] - 1);
+                                drawContext.drawImage(image, image.toDo[i][0]*image.toDo[i][2] + 1,image.toDo[i][1]*image.toDo[i][2] + 1,image.toDo[i][2] - 1,image.toDo[i][2] - 1);
                         }
                         image.toDo = null;
                 };
         }
-
-
 }
 
 function makeCanvasWithBackgroundImage(background, gridSize, remakeImageArrays)
@@ -198,6 +205,12 @@ function addClickable()
                                 }
                         }
                 }
+        };
+
+        // Make Player Canvas Button Instructions
+        makePlayerCanvasButton.onclick = function (event)
+        {
+                makePlayerCanvas();
         };
 
         // insert button instructions
@@ -385,19 +398,37 @@ function drawGrid(gridX, gridY)
         drawImageOnGrid(playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)], gridX, gridY);
 }
 
+function drawPlayerGrid(gridX, gridY)
+{
+        if (isTileHidden(gridX, gridY) == true)
+        {
+                playerContext.fillRect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
+        }
+        else
+        {
+                playerContext.drawImage(background, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize, gridX * canvas.gridSize, gridY * canvas.gridSize, canvas.gridSize, canvas.gridSize); 
+                playerContext.strokeRect(gridX * canvas.gridSize + 0.5, gridY * canvas.gridSize + 0.5, canvas.gridSize, canvas.gridSize);
+                drawImageOnGrid(playerImages[gridX + gridY * Math.ceil(canvas.width / canvas.gridSize)], gridX, gridY, playerContext);
+        }
+}
+
 function clearCanvas()
 {
         context.clearRect(0,0,canvas.width,canvas.height);
 }
 
 
-function restorePlayerCanvas()
+function makePlayerCanvas()
 {
-        makeCanvasWithBackgroundImage(canvas.background, canvas.gridSize, false);
-                
-        for (var i = 0; i < playerImages.length;i++)
+        playerCanvas.width = canvas.width;
+        playerCanvas.height = canvas.height;
+
+        for (var x = 0; x < Math.ceil(playerCanvas.width / canvas.gridSize);x++)
         {
-                drawImageOnGrid(playerImages[i], i % Math.ceil(canvas.width / canvas.gridSize), Math.floor(i / Math.ceil(canvas.width / canvas.gridSize)));
+                for (var y = 0; y < Math.ceil(playerCanvas.height / canvas.gridSize); y++)
+                {
+                        drawPlayerGrid(x,y);
+                }
         }
 }
 
