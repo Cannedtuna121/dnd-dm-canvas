@@ -41,6 +41,9 @@
                  <div>
                          <canvas id=playerCanvas width=0 height=0 style="border:1px solid #000000"></canvas>
                  </div>
-
-                <script src="canvas.js"></script>
+                 <script>
+                         token = new URLSearchParams(window.location.search).get('token');
+                         document.getElementById("selected").src += "?token=" + token;
+                         document.write("<script src=canvas.js?token=" + token + "><\/script>");
+                 </script>
         </body>

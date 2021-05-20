@@ -28,6 +28,8 @@ var hideX, hideY;
 
 var selectedToMove;
 
+var token = new URLSearchParams(window.location.search).get('token');
+
 selectedCopy.src = selected.src;
 
 addClickable();
@@ -237,7 +239,7 @@ function addClickable()
         // set background instructions
         setBackgroundButton.onclick = function (event)
         {
-                background.src = document.URL + "?grab=" + setBackgroundInput.value;
+                background.src = document.URL + "?grab=" + setBackgroundInput.value + "&token=" + token;
                 setBackgroundInput.value = "";
                 makeCanvasWithBackgroundImage(background, 40, true);
         };
@@ -245,7 +247,7 @@ function addClickable()
         // add image instructions
         addImageButton.onclick = function (event)
         {
-                selected.src = document.URL + "?grab=" + addImageInput.value;
+                selected.src = document.URL + "?grab=" + addImageInput.value + "&token=" + token;
                 addImageInput.value = "";
 
                 for (var i = 0; i < addedImagesDiv.childNodes.length;i++)

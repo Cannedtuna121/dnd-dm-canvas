@@ -2,22 +2,35 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import requests
+import webbrowser
+import secrets
 
 class ForwardingHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         querys = parse_qs(urlparse(self.path).query)
-        if 'grab' in querys:
-            grabURL = querys['grab'][0]
-            request = requests.get(grabURL)
-            request.close()
-            self.send_response(request.status_code)
-            self.send_header("Content-type", request.headers["Content-type"])
-            #for key in request.headers:
-            #    self.send_header(key, request.headers[key])
-            self.end_headers()
-            self.wfile.write(bytes(request.content))
+        if 'token' in querys and querys['token'][0] == hostToken:
+            if 'grab' in querys:
+                grabURL = querys['grab'][0]
+                request = requests.get(grabURL)
+                request.close()
+                self.send_response(request.status_code)
+                self.send_header("Content-type", request.headers["Content-type"])
+                #for key in request.headers:
+                #    self.send_header(key, request.headers[key])
+                self.end_headers()
+                self.wfile.write(bytes(request.content))
+            else:
+                super().do_GET()
         else:
+            self.path = "/client/" + self.path
+            print(self.path)
             super().do_GET()
+
+hostToken = secrets.token_hex(16)
+
 server = HTTPServer(("localhost", 8000), ForwardingHTTPRequestHandler);
 
+
+
+webbrowser.open("http://localhost:8000?token=" + hostToken)
 server.serve_forever()
