@@ -237,7 +237,7 @@ function addClickable()
         // set background instructions
         setBackgroundButton.onclick = function (event)
         {
-                background.src = setBackgroundInput.value;
+                background.src = document.URL + "?grab=" + setBackgroundInput.value;
                 setBackgroundInput.value = "";
                 makeCanvasWithBackgroundImage(background, 40, true);
         };
@@ -245,7 +245,7 @@ function addClickable()
         // add image instructions
         addImageButton.onclick = function (event)
         {
-                selected.src = addImageInput.value;
+                selected.src = document.URL + "?grab=" + addImageInput.value;
                 addImageInput.value = "";
 
                 for (var i = 0; i < addedImagesDiv.childNodes.length;i++)
